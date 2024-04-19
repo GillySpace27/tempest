@@ -78,11 +78,11 @@ def main():
             changemodels[j]=np.mean(allchange[j,:])
             it += 1
         uout[j,:] = uinj[0,:].copy()
-        print j,', # iterations:',it,', conv:',changemodels[j]
+        print (j,', # iterations:',it,', conv:',changemodels[j])
 
     u,zC = prospero(rm,nmods,nsteps,B,dBdr,T,dTdr,zTR,uout)
     np.savez(filename+'_prospero', u=u, zC=zC)
-  
+
 def init():
     """
     PURPOSE: To setup all required physical constants, including
@@ -99,7 +99,7 @@ def init():
     boltzk = 1.381e-16 #erg/K = g cm^2 s^-2 K^-1
     mH = 1.674e-24 #g
     Rsun = 6.955e10 #cm
-    
+
     #constants used in the code that can be adjusted if needed:
     global zSS, zAU, ztran, zlow
     zSS = 1.5     #Rsun, accepted standard
@@ -152,11 +152,11 @@ def miranda(rm,nmods,nsteps,B,dBdr,T,dTdr,zTR):
             magterm = -ucr[j,k]**2*(dBdr[j,k]/B[j,k])
             tempterm = -ucr[j,k]**2*(dTdr[j,k]/T[j,k])
             rhs[j,k] = gravterm + magterm + tempterm
-  
+
     u,zcrit = outflows(rm,nmods,nsteps,rhs,ucr)
     np.savez(filename+'_miranda', ucr=ucr, rhs=rhs, u=u, zcrit=zcrit)
     return u,zcrit
-        
+
 def prospero(rm,nmods,nsteps,B,dBdr,T,dTdr,zTR,u1):
     """
     PURPOSE: To find the solar wind outflow solution containing the
@@ -245,7 +245,7 @@ def quickDeriv(f,r,fsets,steps):
         dfdr - value of the derivative of f w.r.t. r for each model.
     EXTERNAL PACKAGES: numpy
     """
-    #Slope taken from centered difference, general use 
+    #Slope taken from centered difference, general use
     dfdr = np.zeros((fsets,steps))
     for j in range(0,fsets):
         # first height value's derivative is slope from pt 0 to pt 1
@@ -262,7 +262,7 @@ def rk4(fi,ri,dr,r,dfdr=None):
     """
         PURPOSE: To integrate a function using fourth-order
         Runge-Kutta techniques from a starting point (ri,fi)
-        
+
         INPUTS:
         fi - the starting value of the function
         ri - the starting radius from which to integrate out
@@ -271,7 +271,7 @@ def rk4(fi,ri,dr,r,dfdr=None):
         dfdr - the derivative of f; alternately used to contain
         the arrays for specific TEMPEST use: ucr and rhs
         OUTPUT:
-        ff - the ending value of the function at a point ri + dr 
+        ff - the ending value of the function at a point ri + dr
              (where dr may be in either direction)
         EXTERNAL PACKAGES: numpy
         """
@@ -283,12 +283,12 @@ def rk4(fi,ri,dr,r,dfdr=None):
     fstep=fi
     stepstotal = 0.0
     stepstaken = 0
-    
+
     while np.abs(stepstotal) < np.abs(dr):
         r1 = rstep
         f1 = fstep
-        
-        
+
+
         dlnf = dfdrval(fstep,rstep,r,dfdr)/fstep
         deltar = sign*np.abs(adaptiveconstant/dlnf)
         #check to see if deltar is too large or too many steps have happened
@@ -377,16 +377,16 @@ def fitT(B,zx):
     init()
     rm = (zx+1.0)*Rsun
     steps = len(zx)
-    
+
     aucheck = abs(zx - zAU)
     iau = int(aucheck.argmin())
     lowcheck = abs(zx - zlow)
     ilow = int(lowcheck.argmin())
     sscheck = abs(zx - zSS)
     iss = int(sscheck.argmin())
-    
-    """The following fitting parameters are based on correlations 
-        between magnetic field strengths and ZEPHYR-determined 
+
+    """The following fitting parameters are based on correlations
+        between magnetic field strengths and ZEPHYR-determined
         temperature profiles. Latest update in version 1.2.1"""
     zset = (0.00314, 0.4206, 2.0, 3.0)
     iset = np.zeros(4)
@@ -399,7 +399,7 @@ def fitT(B,zx):
         z_TR[j] = 0.0057+7.e-6/(B[j,iset[2]]**1.3)
         for k in range(4):
             Bsetfit[j,k] = B[j,iset[k]]
-    
+
     zresid = (0.662,0.0144)
     iresid0 = int(np.abs(zx-zresid[0]).argmin())
     iresid1 = int(np.abs(zx-zresid[1]).argmin())
@@ -432,7 +432,7 @@ def fitT(B,zx):
         ifit[i] = int(abs(zx-zfit[i]).argmin())
         azfit[i] = np.log10(zfit[i])
 
-    Ttry = np.zeros((models,steps))    
+    Ttry = np.zeros((models,steps))
     for j in range(0, models):
         trcon = (Tsetfit[j,0]**3.5 - TTR**3.5)/(zfit[0]**2 - z_TR[j]**2)
         for k in range(steps):
@@ -481,7 +481,7 @@ def fit_refl(B1,zTR1,rm):
     init()
     zx = (rm/Rsun)- 1.0
     steps = len(zx)
-    
+
     aucheck = abs(zx - zAU)
     iau = int(aucheck.argmin())
     TRcheck = abs(zx - zTR1)
@@ -490,7 +490,7 @@ def fit_refl(B1,zTR1,rm):
     ilow = int(lowcheck.argmin())
     sscheck = abs(zx - zSS)
     iss = int(sscheck.argmin())
-    
+
     zset = (0.00975, 0.011, 0.573, 0.315, 3.0)
     iset = np.zeros(5)
     for i in range(5):
@@ -573,7 +573,7 @@ def fullRHS(r,models,steps,B,dBdr,T,dTdr,zTR,u):
     EXTERNAL PACKAGES: numpy
     """
     init()
-    
+
     zx = (r/Rsun)-1.0
     rho = np.zeros((models,steps))
     VA = np.zeros((models,steps))
@@ -602,14 +602,14 @@ def fullRHS(r,models,steps,B,dBdr,T,dTdr,zTR,u):
         rho[j,iTR[j]] = 10**rhoTRexp # * 1.4?
         rho[j,:] = ((rho[j,iTR[j]]*u[j,iTR[j]]/B[j,iTR[j]])*
                     (B[j,:]/u[j,:]))
-    
+
     #wave action conservation (Cranmer 2010, eq. 29):
     #   (u(r)+VA)**2 UA / (VA*B(r)) = constant, Sbase in init()
     limit = 10.0
 
     VA = B/np.sqrt(4*np.pi*rho)
     UA,QA = waveaction(r,B,zTR,u,rho,VA,Sbase,np.ones((models,steps)))
-    
+
     vperp1 = np.sqrt(UA/rho)
     tref = ((r+Rsun)*(r-Rsun))/(r*VA)
     BBase = B[:,0]
@@ -618,7 +618,7 @@ def fullRHS(r,models,steps,B,dBdr,T,dTdr,zTR,u):
     eff = 1/(1+(teddy/tref))
     UA,QA = waveaction(r,B,zTR,u,rho,VA,Sbase,eff)
     vperp = np.sqrt(UA/rho)
-    
+
     for j in range(0,models):
         for k in range(0,steps):
             if (r[k]/Rsun) < zTR[j]+1:
@@ -668,7 +668,7 @@ def waveaction(r,B,zTR,u,rho,VA,S0,eff):
     zm = r-Rsun
     fivecheck = abs(zx - 5)
     ifive = int(fivecheck.argmin())
-    
+
     models = len(B[:,0])
 
     refl = np.zeros((models,steps))
@@ -701,9 +701,9 @@ def waveaction(r,B,zTR,u,rho,VA,S0,eff):
 def outflows(r,nmods,nsteps,rhs,ucr):
     """
     PURPOSE: To find the correct critical point based on the zero of the
-        RHS, where the integral of the RHS is at an absolute minumum 
+        RHS, where the integral of the RHS is at an absolute minumum
         (see Kopp & Holzer 1976). With critical point (located between
-        icrit and icrit+1, find slope at critical location and solve 
+        icrit and icrit+1, find slope at critical location and solve
         out from critical point to get full outflow
     INPUTS:
         r - radius array where all profiles are defined
@@ -742,15 +742,15 @@ def outflows(r,nmods,nsteps,rhs,ucr):
         roots = np.where(rootflag > 0)
         if len(roots[0]) == 0:
             icrit[j] = -1
-            print 'CAUTION: No critical point for model',j
+            print ('CAUTION: No critical point for model',j)
             badflag=1
         else: #Find the absolute minimum of F for all roots
             extrema = F[j,roots[0]]
             xpt = extrema.argmin()
             icrit[j] = roots[0][xpt]
     if badflag == 1:
-        print 'indexCrit set to -1 for failed models'
-    
+        print ('indexCrit set to -1 for failed models')
+
     rCplus,uCplus,dUdrcplus = critSlope(r,nmods,nsteps,rhs,ucr,icrit+1)
     rCminus,uCminus,dUdrcminus = critSlope(r,nmods,nsteps,rhs,ucr,icrit)
 
@@ -773,7 +773,7 @@ def outflows(r,nmods,nsteps,rhs,ucr):
 def critSlope(r,models,steps,rhs,ucr,indexcrit):
     """
     PURPOSE: Given the RHS and critical speed profile, find the slope
-        of the solar wind outflow at the critical point using the 
+        of the solar wind outflow at the critical point using the
         following method:
         du/dr = N/D = 0/0 at critical point : L'Hoptial's Rule
         N = RHS from parkerRHS or fullRHS, D = u - (uC**2/u)
@@ -808,10 +808,10 @@ def critSlope(r,models,steps,rhs,ucr,indexcrit):
             radicand =duCdr[j,indexcrit[j]]**2+(2.0*dNdrC[j])
             if radicand <= 0:
                 radicand = 0
-                print 'invalid value encountered in sqrt, set to 0'
+                print ('invalid value encountered in sqrt, set to 0')
             dUdrc[j] = (0.5*(duCdr[j,indexcrit[j]]+np.sqrt(radicand)))
     if models > 1:
-        print 'range of slopes:',min(dUdrc),max(dUdrc)
+        print ('range of slopes:',min(dUdrc),max(dUdrc))
     return rC,uC,dUdrc
 
 def slope2curve(r,iC,rpt,upt,dUdrpt,ucrj,rhsj):
@@ -834,13 +834,13 @@ def slope2curve(r,iC,rpt,upt,dUdrpt,ucrj,rhsj):
     npoints = len(r)
     iC = int(iC)
     u = np.zeros(npoints)
-    
+
     u[iC] = upt + (r[iC] - rpt)*dUdrpt[0]
     u[iC+1] = upt + (r[iC+1] - rpt)*dUdrpt[1]
-    
+
     u[iC-1] = u[iC] + (r[iC-1]-r[iC])*dUdrpt[0]
     u[iC+2] = u[iC+1] + (r[iC+2]-r[iC+1])*dUdrpt[1]
-    
+
     for i in range(iC-1,0,-1):
         #loops down from iC-1 to 1 inclusive
         #populates u for iC-2 to 0, start of array
@@ -848,8 +848,8 @@ def slope2curve(r,iC,rpt,upt,dUdrpt,ucrj,rhsj):
         u[i-1] = rk4(u[i],r[i],dr,r,dfdr=(ucrj,rhsj))
         if u[i-1] < 0:
             u[i-1] = u[i]
-            print 'Negative value encountered (down), i=', i
-    
+            print ('Negative value encountered (down), i=', i)
+
     for i in range(iC+2,npoints-1):
         #loops from iC+2 to npoints-2 inclusive
         #populates u for iC+3 to npoints-1, end of array
@@ -857,7 +857,7 @@ def slope2curve(r,iC,rpt,upt,dUdrpt,ucrj,rhsj):
         u[i+1] = rk4(u[i],r[i],dr,r,dfdr=(ucrj,rhsj))
         if u[i+1] < 0:
             u[i+1] = u[i]
-            print 'Negative value encountered (up), i=', i
+            print ('Negative value encountered (up), i=', i)
     return u
 
 def upwindmapping(r,phi,nmodels,ubound):
